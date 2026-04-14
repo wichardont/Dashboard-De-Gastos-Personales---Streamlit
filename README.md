@@ -33,3 +33,6 @@ Extras:
  - Se mejoró la organización del código separandolo en varios archivos, cada uno con una función específica
  - Se separó la visualización del dataframe en una pestaña propia
  - Si alguien lee esto, como dato curioso, me apareció un error mientras hacia esta versión en la parte de las graficas, estuve media hora buscando cómo solucionarlo, lo logré pero a medias, me fui a comer, regresé y se había arreglado solo (lol)
+
+# v1.3 (FEATURES UPDATE)
+ - Se añadio una opción para filtrar los datos de los gráficos tanto por fecha como por categoría

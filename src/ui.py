@@ -23,6 +23,41 @@ def render_app():
     st.title("Dashboard de Gastos Personales")
 
     st.sidebar.header("Navegación")
+    st.sidebar.subheader("Filtros")
+
+    #FILTROS POR FECHA
+    fecha_min = df["fecha"].min()
+    fecha_max = df["fecha"].max()
+
+    rango_fechas = st.sidebar.date_input(
+        "Rango de fechas",
+        value=(fecha_min, fecha_max)
+    )
+
+    #FILTROS POR CATEGORIA
+    categorias = df["categoria"].unique().tolist()
+
+    categorias_seleccionadas = st.sidebar.multiselect(
+        "Categorías",
+        options=categorias,
+        default=None
+    )
+
+    #APLICAR FILTROS
+    df_filtrado = df.copy()
+
+    # filtro por fechas
+    if len(rango_fechas) == 2:
+        inicio, fin = rango_fechas
+        df_filtrado = df_filtrado[
+            (df_filtrado["fecha"] >= pd.to_datetime(inicio)) &
+            (df_filtrado["fecha"] <= pd.to_datetime(fin))
+        ]
+
+    # filtro por categoría
+    df_filtrado = df_filtrado[
+        df_filtrado["categoria"].isin(categorias_seleccionadas)
+    ]
 
     opciones_navegacion = ["Añadir Gasto", "Gráficos", "DataFrame"]
     pestania = st.sidebar.selectbox("Menú", options = opciones_navegacion)
@@ -61,7 +96,7 @@ def render_app():
             # MÉTRICAS
             st.subheader("Métricas")
 
-            metricas = calcular_metricas(df)
+            metricas = calcular_metricas(df_filtrado)
 
             with st.container():
                 col1, col2, col3, col4 = st.columns(4)
@@ -81,7 +116,7 @@ def render_app():
 
                 with col1:
                     # gráfico por día
-                    df_dia = gastos_por_dia(df)
+                    df_dia = gastos_por_dia(df_filtrado)
                     fig_dia = px.bar(df_dia, x="fecha", y="monto", title="Gastos por día")
                     fig_dia.update_xaxes(type="category")
 
@@ -89,7 +124,7 @@ def render_app():
                 
                 with col2:
                     # gráfico por categoría
-                    df_cat = gastos_por_categoria(df)
+                    df_cat = gastos_por_categoria(df_filtrado)
                     fig_cat = px.pie(df_cat, names="categoria", values="monto", title="Gastos por categoría")
 
                     st.plotly_chart(fig_cat, use_container_width=True)
