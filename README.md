@@ -36,3 +36,6 @@ Extras:
 
 # v1.3 (FEATURES UPDATE)
  - Se añadio una opción para filtrar los datos de los gráficos tanto por fecha como por categoría
+
+# v1.3.2 (MINOR UPDATE)
+ - Se movieron los filtros a la pestaña de los gráficos

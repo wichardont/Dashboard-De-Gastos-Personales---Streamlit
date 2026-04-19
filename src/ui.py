@@ -25,39 +25,7 @@ def render_app():
     st.sidebar.header("Navegación")
     st.sidebar.subheader("Filtros")
 
-    #FILTROS POR FECHA
-    fecha_min = df["fecha"].min()
-    fecha_max = df["fecha"].max()
-
-    rango_fechas = st.sidebar.date_input(
-        "Rango de fechas",
-        value=(fecha_min, fecha_max)
-    )
-
-    #FILTROS POR CATEGORIA
-    categorias = df["categoria"].unique().tolist()
-
-    categorias_seleccionadas = st.sidebar.multiselect(
-        "Categorías",
-        options=categorias,
-        default=None
-    )
-
-    #APLICAR FILTROS
-    df_filtrado = df.copy()
-
-    # filtro por fechas
-    if len(rango_fechas) == 2:
-        inicio, fin = rango_fechas
-        df_filtrado = df_filtrado[
-            (df_filtrado["fecha"] >= pd.to_datetime(inicio)) &
-            (df_filtrado["fecha"] <= pd.to_datetime(fin))
-        ]
-
-    # filtro por categoría
-    df_filtrado = df_filtrado[
-        df_filtrado["categoria"].isin(categorias_seleccionadas)
-    ]
+    
 
     opciones_navegacion = ["Añadir Gasto", "Gráficos", "DataFrame"]
     pestania = st.sidebar.selectbox("Menú", options = opciones_navegacion)
@@ -92,6 +60,42 @@ def render_app():
             if df.empty:
                 st.info("Áun no hay gastos registrados")
                 return
+            
+            st.subheader("Filtros")
+            
+            #FILTROS POR FECHA
+            fecha_min = df["fecha"].min()
+            fecha_max = df["fecha"].max()
+
+            rango_fechas = st.date_input(
+                "Rango de fechas",
+                value=(fecha_min, fecha_max)
+            )
+
+            #FILTROS POR CATEGORIA
+            categorias = df["categoria"].unique().tolist()
+
+            categorias_seleccionadas = st.multiselect(
+                "Categorías",
+                options=categorias,
+                default=None
+            )
+
+            #APLICAR FILTROS
+            df_filtrado = df.copy()
+
+            # filtro por fechas
+            if len(rango_fechas) == 2:
+                inicio, fin = rango_fechas
+                df_filtrado = df_filtrado[
+                    (df_filtrado["fecha"] >= pd.to_datetime(inicio)) &
+                    (df_filtrado["fecha"] <= pd.to_datetime(fin))
+                ]
+
+            # filtro por categoría
+            df_filtrado = df_filtrado[
+                df_filtrado["categoria"].isin(categorias_seleccionadas)
+            ]
 
             # MÉTRICAS
             st.subheader("Métricas")
