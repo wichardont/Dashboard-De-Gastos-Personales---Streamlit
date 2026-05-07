@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-from src.storage import cargar_datos, guardar_datos
+from src.db import obtener_gastos, insertar_gasto, eliminar_gasto, actualizar_gasto
 from src.logic import calcular_metricas, gastos_por_categoria, gastos_por_dia
 
 
@@ -15,17 +15,13 @@ def render_app():
     )
 
     # CARGAR DATOS
-    if "gastos" not in st.session_state:
-        st.session_state.gastos = cargar_datos()
+    user_id = st.session_state.user[0]
 
-    df = st.session_state.gastos
+    df = obtener_gastos(user_id)
 
     st.title("Dashboard de Gastos Personales")
 
     st.sidebar.header("Navegación")
-    st.sidebar.subheader("Filtros")
-
-    
 
     opciones_navegacion = ["Añadir Gasto", "Gráficos", "DataFrame"]
     pestania = st.sidebar.selectbox("Menú", options = opciones_navegacion)
@@ -43,17 +39,16 @@ def render_app():
                 registrar = st.form_submit_button("Registrar Gasto")
 
                 if registrar:
-                    nuevo = pd.DataFrame([{
-                        "fecha": fecha,
-                        "categoria": categoria,
-                        "monto": monto,
-                        "descripcion": descripcion
-                    }])
-
-                    st.session_state.gastos = pd.concat([df, nuevo], ignore_index=True)
-                    guardar_datos(st.session_state.gastos)
-
-                    st.success("Gasto registrado")
+                    if monto <= 0:
+                        st.warning("El monto debe ser mayor a 0")
+                    else:
+                        insertar_gasto(user_id, fecha, categoria, monto, descripcion)
+                        st.session_state.mensaje = "Gasto registrado"
+                        st.rerun()
+            
+            if "mensaje" in st.session_state:
+                st.success(st.session_state.mensaje)
+                del st.session_state.mensaje
 
         case "Gráficos":
             # VALIDACIÓN
@@ -78,7 +73,7 @@ def render_app():
             categorias_seleccionadas = st.multiselect(
                 "Categorías",
                 options=categorias,
-                default=None
+                default=categorias
             )
 
             #APLICAR FILTROS
@@ -136,4 +131,64 @@ def render_app():
         case "DataFrame":
             st.subheader("DataFrame actual")
             
-            st.dataframe(df)
+            for i, row in df.iterrows():
+                col1, col2, col3, col4, col5, col6 = st.columns([2,2,2,3,2,2])
+
+                col1.write(row["fecha"])
+                col2.write(row["categoria"])
+                col3.write(f"${row['monto']:.2f}")
+                col4.write(row["descripcion"])
+
+                # BOTÓN EDITAR
+                if col5.button("Editar", key=f"edit_{row['id']}"):
+                    st.session_state.editando = row.to_dict()
+
+                # BOTÓN ELIMINAR
+                if col6.button("Eliminar", key=f"delete_{row['id']}"):
+                    st.session_state.confirmar_delete = row["id"]
+            
+            if "confirmar_delete" in st.session_state:
+                st.warning("¿Seguro que quieres eliminar este gasto?")
+
+                col1, col2 = st.columns(2)
+
+                if col1.button("Sí, eliminar"):
+                    eliminar_gasto(st.session_state.confirmar_delete)
+                    del st.session_state.confirmar_delete
+                    st.session_state.mensaje = "Gasto eliminado"
+                    st.rerun()
+
+                if col2.button("Cancelar"):
+                    del st.session_state.confirmar_delete
+            
+            if "editando" in st.session_state:
+                gasto = st.session_state.editando
+
+                st.subheader("Editar gasto")
+
+                fecha = st.date_input("Fecha", pd.to_datetime(gasto["fecha"]))
+                categoria = st.selectbox(
+                    "Categoría",
+                    ["Comida", "Transporte", "Ocio", "Otro"],
+                    index=["Comida", "Transporte", "Ocio", "Otro"].index(gasto["categoria"])
+                )
+                monto = st.number_input("Monto", value=float(gasto["monto"]), min_value=0.0)
+                descripcion = st.text_area("Descripción", value=gasto["descripcion"])
+
+                col1, col2 = st.columns(2)
+
+                if col1.button("Guardar cambios"):
+                    actualizar_gasto(
+                        gasto["id"],
+                        pd.to_datetime(fecha).normalize(),
+                        categoria,
+                        monto,
+                        descripcion
+                    )
+
+                    del st.session_state.editando
+                    st.session_state.mensaje = "Gasto actualizado"
+                    st.rerun()
+
+                if col2.button("Cancelar"):
+                    del st.session_state.editando

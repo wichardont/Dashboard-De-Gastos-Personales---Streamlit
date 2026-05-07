@@ -39,3 +39,9 @@ Extras:
 
 # v1.3.2 (MINOR UPDATE)
  - Se movieron los filtros a la pestaña de los gráficos
+
+# v2.0 (UX UPDATE)
+ - Se añadió un sistema de autenticación (Login y Registro)
+ - Se modificó el flujo para que se mostraran solo los datos del usuario que hizo login con su respectiva cuenta
+ - Se cambió la base de datos csv por una .db con SQLite
+ - Se añadió un sistema para modificar y/o eliminar registros de la base de datos
