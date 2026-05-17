@@ -1,130 +1,159 @@
-import sqlite3
+from sqlalchemy import create_engine, text
 import pandas as pd
 import hashlib
+from dotenv import load_dotenv
+import os
 
-db_path = "data/gastos.db"
+# CARGAR EL .env
+load_dotenv()
 
-# Conexión
-def conectar():
-    return sqlite3.connect(db_path)
+# URL DE SUPABASE
+DB_URL = os.getenv("DB_URL")
 
-# Crear tablas
-def crear_tablas():
-    conn = conectar()
-    cursor = conn.cursor()
+# ENGINE
+engine = create_engine(DB_URL, pool_size=2, max_overflow=0)
 
-    # tabla usuarios
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS usuarios (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE,
-        password TEXT
-    )
-    """)
-
-    # tabla gastos
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS gastos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        fecha TEXT,
-        categoria TEXT,
-        monto REAL,
-        descripcion TEXT,
-        FOREIGN KEY(user_id) REFERENCES usuarios(id)
-    )
-    """)
-
-    conn.commit()
-    conn.close()
-
-# Hashear la contraseña
+# HASHEAR LA CONTRASEÑA
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
-# Registrar usuario
+
+# REGISTRAR USUARIO
 def registrar_usuario(username, password):
-    conn = conectar()
-    cursor = conn.cursor()
+
+    password_hash = hash_password(password)
 
     try:
-        cursor.execute(
-            "INSERT INTO usuarios (username, password) VALUES (?, ?)",
-            (username, hash_password(password))
-        )
-        conn.commit()
+        with engine.begin() as conn:
+
+            conn.execute(
+                text("""
+                    INSERT INTO usuarios (username, password)
+                    VALUES (:username, :password)
+                """),
+                {
+                    "username": username,
+                    "password": password_hash
+                }
+            )
+
         return True
-    except sqlite3.IntegrityError:
+
+    except Exception as e:
+        print(e)
         return False
-    finally:
-        conn.close()
 
-# Iniciar sesión (login)
+# LOGIN
 def login_usuario(username, password):
-    conn = conectar()
-    cursor = conn.cursor()
 
-    cursor.execute(
-        "SELECT * FROM usuarios WHERE username = ? AND password = ?",
-        (username, hash_password(password))
-    )
+    password_hash = hash_password(password)
 
-    user = cursor.fetchone()
-    conn.close()
+    with engine.connect() as conn:
 
-    return user  # None si no existe
+        result = conn.execute(
+            text("""
+                SELECT *
+                FROM usuarios
+                WHERE username = :username
+                AND password = :password
+            """),
+            {
+                "username": username,
+                "password": password_hash
+            }
+        )
 
-# Insertar gasto
+        user = result.fetchone()
+
+    return dict(user._mapping) if user else None
+
+
+# INSERTAR GASTO
 def insertar_gasto(user_id, fecha, categoria, monto, descripcion):
-    conn = conectar()
-    cursor = conn.cursor()
 
-    # asegurar formato fecha
     fecha = pd.to_datetime(fecha).strftime("%Y-%m-%d")
 
-    cursor.execute("""
-        INSERT INTO gastos (user_id, fecha, categoria, monto, descripcion)
-        VALUES (?, ?, ?, ?, ?)
-    """, (user_id, fecha, categoria, monto, descripcion))
+    with engine.begin() as conn:
 
-    conn.commit()
-    conn.close()
+        conn.execute(
+            text("""
+                INSERT INTO gastos
+                (user_id, fecha, categoria, monto, descripcion)
 
-# Obtener gasto por usuario
+                VALUES
+                (:user_id, :fecha, :categoria, :monto, :descripcion)
+            """),
+            {
+                "user_id": user_id,
+                "fecha": fecha,
+                "categoria": categoria,
+                "monto": monto,
+                "descripcion": descripcion
+            }
+        )
+
+
+# OBTENER GASTOS
 def obtener_gastos(user_id):
-    conn = conectar()
+
+    query = text("""
+        SELECT id, fecha, categoria, monto, descripcion
+        FROM gastos
+        WHERE user_id = :user_id
+    """)
 
     df = pd.read_sql(
-        "SELECT id, fecha, categoria, monto, descripcion FROM gastos WHERE user_id = ?",
-        conn,
-        params=(user_id,)
+        query,
+        engine,
+        params={"user_id": user_id}
     )
-
-    conn.close()
 
     if not df.empty:
         df["fecha"] = pd.to_datetime(df["fecha"])
 
     return df
+
+
+# ELIMINAR GASTO
 def eliminar_gasto(gasto_id):
-    conn = conectar()
-    cursor = conn.cursor()
 
-    cursor.execute("DELETE FROM gastos WHERE id = ?", (gasto_id,))
+    with engine.begin() as conn:
 
-    conn.commit()
-    conn.close()
+        conn.execute(
+            text("""
+                DELETE FROM gastos
+                WHERE id = :id
+            """),
+            {
+                "id": gasto_id
+            }
+        )
 
 
+# ACTUALIZAR GASTO
 def actualizar_gasto(gasto_id, fecha, categoria, monto, descripcion):
-    conn = conectar()
-    cursor = conn.cursor()
 
-    cursor.execute("""
-        UPDATE gastos
-        SET fecha = ?, categoria = ?, monto = ?, descripcion = ?
-        WHERE id = ?
-    """, (fecha, categoria, monto, descripcion, gasto_id))
+    fecha = pd.to_datetime(fecha).strftime("%Y-%m-%d")
 
-    conn.commit()
-    conn.close()
+    with engine.begin() as conn:
+
+        conn.execute(
+            text("""
+                UPDATE gastos
+
+                SET
+                    fecha = :fecha,
+                    categoria = :categoria,
+                    monto = :monto,
+                    descripcion = :descripcion
+
+                WHERE id = :id
+            """),
+            {
+                "id": gasto_id,
+                "fecha": fecha,
+                "categoria": categoria,
+                "monto": monto,
+                "descripcion": descripcion
+            }
+        )

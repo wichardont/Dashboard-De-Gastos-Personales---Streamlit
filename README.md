@@ -45,3 +45,8 @@ Extras:
  - Se modificó el flujo para que se mostraran solo los datos del usuario que hizo login con su respectiva cuenta
  - Se cambió la base de datos csv por una .db con SQLite
  - Se añadió un sistema para modificar y/o eliminar registros de la base de datos
+
+# v3.0 (DOCKERIZED APP)
+ - Se dockerizó la aplicación para después añadirla a un entorno de producción
+ - Se hicieron algunos cambios en db.py, ui.py y app.py para poder cambiar la base de datos
+ a una online

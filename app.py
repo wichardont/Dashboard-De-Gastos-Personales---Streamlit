@@ -1,10 +1,7 @@
 import streamlit as st
 from src.ui import render_app
-from src.db import crear_tablas
-from src.auth import login_usuario, registrar_usuario
+from src.db import login_usuario, registrar_usuario
 
-# crear tablas al iniciar
-crear_tablas()
 
 def mostrar_login():
     st.title("Login")
@@ -39,7 +36,7 @@ def main():
     if "user" not in st.session_state:
         mostrar_login()
     else:
-        st.sidebar.write(f"👤 {st.session_state.user[1]}")
+        st.sidebar.write(f"👤 {st.session_state.user["username"]}")
 
         if st.sidebar.button("Cerrar sesión"):
             del st.session_state.user

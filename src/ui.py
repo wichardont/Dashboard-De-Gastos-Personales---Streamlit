@@ -6,6 +6,11 @@ from src.db import obtener_gastos, insertar_gasto, eliminar_gasto, actualizar_ga
 from src.logic import calcular_metricas, gastos_por_categoria, gastos_por_dia
 
 
+@st.cache_data
+def cargar_gastos(user_id):
+    return obtener_gastos(user_id)
+
+
 def render_app():
 
     st.set_page_config(
@@ -15,9 +20,9 @@ def render_app():
     )
 
     # CARGAR DATOS
-    user_id = st.session_state.user[0]
+    user_id = st.session_state.user["id"]
 
-    df = obtener_gastos(user_id)
+    df = cargar_gastos(user_id)
 
     st.title("Dashboard de Gastos Personales")
 
@@ -43,6 +48,7 @@ def render_app():
                         st.warning("El monto debe ser mayor a 0")
                     else:
                         insertar_gasto(user_id, fecha, categoria, monto, descripcion)
+                        st.cache_data.clear()
                         st.session_state.mensaje = "Gasto registrado"
                         st.rerun()
             
@@ -154,6 +160,7 @@ def render_app():
 
                 if col1.button("Sí, eliminar"):
                     eliminar_gasto(st.session_state.confirmar_delete)
+                    st.cache_data.clear()
                     del st.session_state.confirmar_delete
                     st.session_state.mensaje = "Gasto eliminado"
                     st.rerun()
@@ -185,6 +192,7 @@ def render_app():
                         monto,
                         descripcion
                     )
+                    st.cache_data.clear()
 
                     del st.session_state.editando
                     st.session_state.mensaje = "Gasto actualizado"

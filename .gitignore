@@ -15,5 +15,5 @@ Thumbs.db
 # Archivos temporales
 temp/
 
-# Base de datos
-data/gastos.db
+# Variables de entorno
+.env
