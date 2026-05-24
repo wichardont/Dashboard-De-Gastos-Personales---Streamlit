@@ -50,3 +50,13 @@ Extras:
  - Se dockerizó la aplicación para después añadirla a un entorno de producción
  - Se hicieron algunos cambios en db.py, ui.py y app.py para poder cambiar la base de datos
  a una online
+
+# v4.0 (UX UPDATE / BUG FIX)
+ - Se cambió la forma de navegar entre las secciones de la aplicación (ahora se usan botones)
+ - Se añadió funcionalidad para ingresar una categoría personalizada
+ - Se corrigió un bug que hacia que el gasto se registrara doble
+ - Se corrigió un bug en el que al dar clic muchas veces seguidas en el botón de editar, salia
+ un error de streamlit en la pantalla
+ - Se mejoró lo más posible la velocidad de carga de la app
+
+# Puede visitar la página en https://dashboard-de-gastos-personales-streamlit.onrender.com/
