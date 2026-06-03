@@ -7,7 +7,8 @@ Aplicación web desarrollada con Streamlit para gestionar y visualizar gastos pe
 - Registro de gastos
 - Visualización de métricas
 - Gráficos interactivos
-- Persistencia en CSV
+- Persistencia en CSV (En las primeras versiones)
+- Online a partir de la versión v3.0
 
 ## Tecnologías
 
@@ -15,8 +16,9 @@ Aplicación web desarrollada con Streamlit para gestionar y visualizar gastos pe
 - Streamlit
 - Pandas
 - Plotly
+- Docker
 
-## Cómo ejecutar
+## Cómo ejecutar localmente
 
 pip install -r requirements.txt  
 streamlit run app.py
@@ -59,4 +61,9 @@ Extras:
  un error de streamlit en la pantalla
  - Se mejoró lo más posible la velocidad de carga de la app
 
-# Puede visitar la página en https://dashboard-de-gastos-personales-streamlit.onrender.com/
+# v5.0 (POO)
+ - Se modificó prácticamente todo el backend, la estructura de las carpetas y archivos
+ para mejorar la organización del código
+ - Se cambió el proyecto a un paradigma orientado a objetos para poder hacerlo más escalable
+
+# Puede visitar la aplición en https://dashboard-de-gastos-personales-streamlit.onrender.com/

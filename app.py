@@ -48,6 +48,20 @@ def mostrar_login():
                 st.error("Credenciales incorrectas")
 
 def main():
+
+    st.markdown(
+        """
+        <html lang="es">
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.set_page_config(
+        page_title="Gastos Personales",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+    
     if "user" not in st.session_state:
         mostrar_login()
     else:

@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, text
-import pandas as pd
+from sqlalchemy.exc import IntegrityError
 import hashlib
 from dotenv import load_dotenv
 import os
@@ -14,7 +14,7 @@ DB_URL = os.getenv("DB_URL")
 engine = create_engine(DB_URL, pool_size=2, max_overflow=0)
 
 # HASHEAR LA CONTRASEÑA
-def hash_password(password):
+def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
 
@@ -39,12 +39,12 @@ def registrar_usuario(username, password):
 
         return True
 
-    except Exception as e:
+    except IntegrityError as e:
         print(e)
         return False
 
 # LOGIN
-def login_usuario(username, password):
+def login_usuario(username: str, password: str) -> dict | None:
 
     password_hash = hash_password(password)
 
@@ -66,94 +66,3 @@ def login_usuario(username, password):
         user = result.fetchone()
 
     return dict(user._mapping) if user else None
-
-
-# INSERTAR GASTO
-def insertar_gasto(user_id, fecha, categoria, monto, descripcion):
-
-    fecha = pd.to_datetime(fecha).strftime("%Y-%m-%d")
-
-    with engine.begin() as conn:
-
-        conn.execute(
-            text("""
-                INSERT INTO gastos
-                (user_id, fecha, categoria, monto, descripcion)
-
-                VALUES
-                (:user_id, :fecha, :categoria, :monto, :descripcion)
-            """),
-            {
-                "user_id": user_id,
-                "fecha": fecha,
-                "categoria": categoria,
-                "monto": monto,
-                "descripcion": descripcion
-            }
-        )
-
-
-# OBTENER GASTOS
-def obtener_gastos(user_id):
-
-    query = text("""
-        SELECT id, fecha, categoria, monto, descripcion
-        FROM gastos
-        WHERE user_id = :user_id
-    """)
-
-    df = pd.read_sql(
-        query,
-        engine,
-        params={"user_id": user_id}
-    )
-
-    if not df.empty:
-        df["fecha"] = pd.to_datetime(df["fecha"])
-
-    return df
-
-
-# ELIMINAR GASTO
-def eliminar_gasto(gasto_id):
-
-    with engine.begin() as conn:
-
-        conn.execute(
-            text("""
-                DELETE FROM gastos
-                WHERE id = :id
-            """),
-            {
-                "id": gasto_id
-            }
-        )
-
-
-# ACTUALIZAR GASTO
-def actualizar_gasto(gasto_id, fecha, categoria, monto, descripcion):
-
-    fecha = pd.to_datetime(fecha).strftime("%Y-%m-%d")
-
-    with engine.begin() as conn:
-
-        conn.execute(
-            text("""
-                UPDATE gastos
-
-                SET
-                    fecha = :fecha,
-                    categoria = :categoria,
-                    monto = :monto,
-                    descripcion = :descripcion
-
-                WHERE id = :id
-            """),
-            {
-                "id": gasto_id,
-                "fecha": fecha,
-                "categoria": categoria,
-                "monto": monto,
-                "descripcion": descripcion
-            }
-        )

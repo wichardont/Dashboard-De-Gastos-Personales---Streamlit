@@ -1,0 +1,83 @@
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+from src.analytics import calcular_metricas, gastos_por_categoria, gastos_por_dia
+
+def render_graficos(df):
+    # VALIDACIÓN
+    if df.empty:
+        st.info("Áun no hay gastos registrados")
+        return
+    
+    st.subheader("Filtros")
+    
+    #FILTROS POR FECHA
+    fecha_min = df["fecha"].min()
+    fecha_max = df["fecha"].max()
+
+    rango_fechas = st.date_input(
+        "Rango de fechas",
+        value=(fecha_min, fecha_max)
+    )
+
+    #FILTROS POR CATEGORIA
+    categorias = df["categoria"].unique().tolist()
+
+    categorias_seleccionadas = st.multiselect(
+        "Categorías",
+        options=categorias,
+        default=categorias
+    )
+
+    #APLICAR FILTROS
+    df_filtrado = df.copy()
+
+    # filtro por fechas
+    if len(rango_fechas) == 2:
+        inicio, fin = rango_fechas
+        df_filtrado = df_filtrado[
+            (df_filtrado["fecha"] >= pd.to_datetime(inicio)) &
+            (df_filtrado["fecha"] <= pd.to_datetime(fin))
+        ]
+
+    # filtro por categoría
+    df_filtrado = df_filtrado[
+        df_filtrado["categoria"].isin(categorias_seleccionadas)
+    ]
+
+    # MÉTRICAS
+    st.subheader("Métricas")
+
+    metricas = calcular_metricas(df_filtrado)
+
+    with st.container():
+        col1, col2, col3, col4 = st.columns(4)
+
+        col1.metric("Total", f"${metricas['total']:,.2f}")
+        col2.metric("Promedio", f"${metricas['promedio']:,.2f}")
+        col3.metric("Máximo", f"${metricas['maximo']:,.2f}")
+        col4.metric("Mínimo", f"${metricas['minimo']:,.2f}")
+
+    st.markdown("---")
+
+    # GRÁFICAS
+    st.subheader("Gráficas")
+
+    with st.container():
+        col1, col2 = st.columns(2)
+
+        with col1:
+            # gráfico por día
+            df_dia = gastos_por_dia(df_filtrado)
+            fig_dia = px.bar(df_dia, x="fecha", y="monto", title="Gastos por día")
+            fig_dia.update_xaxes(type="category")
+
+            st.plotly_chart(fig_dia, use_container_width=True)
+        
+        with col2:
+            # gráfico por categoría
+            df_cat = gastos_por_categoria(df_filtrado)
+            fig_cat = px.pie(df_cat, names="categoria", values="monto", title="Gastos por categoría")
+
+            st.plotly_chart(fig_cat, use_container_width=True)
