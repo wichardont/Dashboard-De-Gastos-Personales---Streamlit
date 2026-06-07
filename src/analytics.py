@@ -9,11 +9,11 @@ def calcular_metricas(df: pd.DataFrame) -> dict:
     }
 
 
-def gastos_por_categoria(df: pd.DataFrame) -> pd.DataFrame:
+def por_categoria(df: pd.DataFrame) -> pd.DataFrame:
     return df.groupby("categoria")["monto"].sum().reset_index()
 
 
-def gastos_por_dia(df: pd.DataFrame) -> pd.DataFrame:
+def por_dia(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     df["fecha"] = pd.to_datetime(df["fecha"]).dt.date
     return df.groupby("fecha")["monto"].sum().reset_index().sort_values("fecha")

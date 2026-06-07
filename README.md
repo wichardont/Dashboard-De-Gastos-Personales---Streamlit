@@ -1,10 +1,11 @@
-# Dashboard de Gastos Personales
+# Dashboard de Finanzas Personales
 
-Aplicación web desarrollada con Streamlit para gestionar y visualizar gastos personales.
+Aplicación web desarrollada con Streamlit para gestionar y visualizar gastos e ingresos personales.
 
 ## Funcionalidades
 
 - Registro de gastos
+- Registro de ingresos (a partir de la versión v6.0)
 - Visualización de métricas
 - Gráficos interactivos
 - Persistencia en CSV (En las primeras versiones)
@@ -65,5 +66,10 @@ Extras:
  - Se modificó prácticamente todo el backend, la estructura de las carpetas y archivos
  para mejorar la organización del código
  - Se cambió el proyecto a un paradigma orientado a objetos para poder hacerlo más escalable
+
+# v6.0 (INGRESOS)
+ - Se añadió un sistema para registrar ingresos al igual que se venía haciendo con los gastos
+ en todas las versiones anteriores, haciendo que la app 
+ tenga un enfoque más general para finanzas personales
 
 # Puede visitar la aplición en https://dashboard-de-gastos-personales-streamlit.onrender.com/

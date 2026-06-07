@@ -57,7 +57,7 @@ def main():
     )
 
     st.set_page_config(
-        page_title="Gastos Personales",
+        page_title="Finanzas Personales",
         layout="wide",
         initial_sidebar_state="expanded"
     )

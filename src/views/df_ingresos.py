@@ -2,7 +2,11 @@ import streamlit as st
 import pandas as pd
 from src.utils.ui_helpers import refrescar
 
-def render_df(df, user_id, categorias, service_gasto):
+def render_df_ingreso(df, user_id, categorias, service_ingreso):
+
+    if df.empty:
+        st.info("Áun no hay ingresos registrados")
+        return
 
     st.subheader("DataFrame actual")
             
@@ -23,46 +27,46 @@ def render_df(df, user_id, categorias, service_gasto):
             st.session_state.confirmar_delete = row["id"]
     
     if "confirmar_delete" in st.session_state:
-        st.warning("¿Seguro que quieres eliminar este gasto?")
+        st.warning("¿Seguro que quieres eliminar este ingreso?")
 
         col1, col2 = st.columns(2)
 
         if col1.button("Sí, eliminar", key="confirm_delete"):
-            service_gasto.eliminar_gasto(st.session_state.confirmar_delete)
+            service_ingreso.eliminar_ingreso(st.session_state.confirmar_delete)
             del st.session_state.confirmar_delete
-            refrescar("Gasto eliminado")
+            refrescar("Ingreso eliminado")
 
         if col2.button("Cancelar", key="cancel_delete"):
             del st.session_state.confirmar_delete
     
     if "editando" in st.session_state:
-        gasto = st.session_state.editando
+        ingreso = st.session_state.editando
 
-        st.subheader("Editar gasto")
+        st.subheader("Editar Ingreso")
 
-        fecha = st.date_input("Fecha", pd.to_datetime(gasto["fecha"]))
+        fecha = st.date_input("Fecha", pd.to_datetime(ingreso["fecha"]))
 
 
         categorias_editar = categorias.copy()
 
-        if gasto["categoria"] not in categorias_editar:
-            categorias_editar.append(gasto["categoria"])
+        if ingreso["categoria"] not in categorias_editar:
+            categorias_editar.append(ingreso["categoria"])
 
         categoria = st.selectbox(
             "Categoría",
             categorias_editar,
-            index=categorias_editar.index(gasto["categoria"])
+            index=categorias_editar.index(ingreso["categoria"])
         )
 
 
-        monto = st.number_input("Monto", value=float(gasto["monto"]), min_value=0.0)
-        descripcion = st.text_area("Descripción", value=gasto["descripcion"])
+        monto = st.number_input("Monto", value=float(ingreso["monto"]), min_value=0.0)
+        descripcion = st.text_area("Descripción", value=ingreso["descripcion"])
 
         col1, col2 = st.columns(2)
 
         if col1.button("Guardar cambios"):
-            service_gasto.actualizar_gasto(
-                gasto_id=gasto["id"],
+            service_ingreso.actualizar_ingreso(
+                ingreso_id=ingreso["id"],
                 user_id=user_id,
                 fecha=pd.to_datetime(fecha).normalize(),
                 categoria=categoria,
@@ -71,7 +75,7 @@ def render_df(df, user_id, categorias, service_gasto):
             )
 
             del st.session_state.editando
-            refrescar("Gasto actualizado")
+            refrescar("Ingreso actualizado")
 
         if col2.button("Cancelar", key="cancel_edit"):
             del st.session_state.editando

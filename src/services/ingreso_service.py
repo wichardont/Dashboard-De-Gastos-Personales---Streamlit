@@ -1,16 +1,16 @@
-from src.models.gastos import Gasto
-from src.repositories.gasto_repository import GastoRepository
+from src.models.ingresos import Ingreso
+from src.repositories.ingreso_repository import IngresoRepository
 
 
-class GastoService:
+class IngresoService:
 
-    def __init__(self, repository: GastoRepository):
+    def __init__(self, repository: IngresoRepository):
         self.repository = repository
 
-    def obtener_gastos_usuario(self, user_id: int) -> list[Gasto]:
-        return self.repository.obtener_por_usuario(user_id)
+    def obtener_ingresos_usuario(self, user_id: int) -> list[Ingreso]:
+        return self.repository.obtener_por_usuario_ingresos(user_id)
 
-    def crear_gasto(self, user_id, fecha, categoria, monto, descripcion=""):
+    def crear_ingreso(self, user_id, fecha, categoria, monto, descripcion=""):
 
         if monto <= 0:
             raise ValueError("El monto debe ser mayor a 0")
@@ -20,7 +20,7 @@ class GastoService:
         
         categoria = categoria.strip().title()
 
-        gasto = Gasto(
+        ingreso = Ingreso(
             id=None,
             user_id=user_id,
             fecha=fecha,
@@ -29,11 +29,11 @@ class GastoService:
             descripcion=descripcion
         )
 
-        self.repository.crear(gasto)
+        self.repository.crear_ingresos(ingreso)
 
-    def actualizar_gasto(
+    def actualizar_ingreso(
         self,
-        gasto_id,
+        ingreso_id,
         user_id,
         fecha,
         categoria,
@@ -49,8 +49,8 @@ class GastoService:
         
         categoria = categoria.strip().title()
 
-        gasto = Gasto(
-            id=gasto_id,
+        ingreso = Ingreso(
+            id=ingreso_id,
             user_id=user_id,
             fecha=fecha,
             categoria=categoria,
@@ -58,17 +58,14 @@ class GastoService:
             descripcion=descripcion
         )
 
-        self.repository.actualizar(gasto)
+        self.repository.actualizar_ingresos(ingreso)
 
-    def eliminar_gasto(self, gasto_id):
-        self.repository.eliminar(gasto_id)
+    def eliminar_ingreso(self, ingreso_id):
+        self.repository.eliminar_ingresos(ingreso_id)
     
     def obtener_categorias(self, df):
         categorias_default = [
-            "Comida",
-            "Transporte",
-            "Ocio",
-            "Otro"
+            "Salario", "Ingreso extra", "Otro"
         ]
 
         if df.empty:

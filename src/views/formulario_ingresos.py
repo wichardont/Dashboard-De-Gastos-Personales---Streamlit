@@ -4,9 +4,9 @@ from datetime import datetime
 
 from src.utils.ui_helpers import refrescar
 
-def render_formulario(user_id, categorias, service_gasto):
+def render_formulario_ingreso(user_id, categorias, service_ingreso):
 
-    st.subheader("Formulario para añadir gastos")
+    st.subheader("Formulario para añadir ingresos")
     
     fecha = st.date_input("Fecha", value=datetime.now())
     fecha = pd.to_datetime(fecha).normalize()
@@ -22,7 +22,7 @@ def render_formulario(user_id, categorias, service_gasto):
     monto = st.number_input("Monto", min_value=0.0, step=1.0)
     descripcion = st.text_area("Descripción (opcional)", height=100)
 
-    registrar = st.button("Registrar Gasto")
+    registrar = st.button("Registrar Ingreso")
 
     if registrar:
         if monto <= 0:
@@ -37,7 +37,7 @@ def render_formulario(user_id, categorias, service_gasto):
 
                 categoria_final = nueva_categoria.strip().title()
 
-            service_gasto.crear_gasto(
+            service_ingreso.crear_ingreso(
                 user_id=user_id,
                 fecha=fecha,
                 categoria=categoria_final,
@@ -45,4 +45,4 @@ def render_formulario(user_id, categorias, service_gasto):
                 descripcion=descripcion
             )
             
-            refrescar("Gasto registrado")
+            refrescar("Ingreso registrado")

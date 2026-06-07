@@ -4,10 +4,10 @@ import plotly.express as px
 
 from src.analytics import calcular_metricas, por_categoria, por_dia
 
-def render_graficos(df):
+def render_graficos_ingreso(df):
     # VALIDACIÓN
     if df.empty:
-        st.info("Áun no hay gastos registrados")
+        st.info("Áun no hay ingresos registrados")
         return
     
     st.subheader("Filtros")
@@ -70,7 +70,7 @@ def render_graficos(df):
         with col1:
             # gráfico por día
             df_dia = por_dia(df_filtrado)
-            fig_dia = px.bar(df_dia, x="fecha", y="monto", title="Gastos por día")
+            fig_dia = px.bar(df_dia, x="fecha", y="monto", title="Ingresos por día")
             fig_dia.update_xaxes(type="category")
 
             st.plotly_chart(fig_dia, use_container_width=True)
@@ -78,6 +78,6 @@ def render_graficos(df):
         with col2:
             # gráfico por categoría
             df_cat = por_categoria(df_filtrado)
-            fig_cat = px.pie(df_cat, names="categoria", values="monto", title="Gastos por categoría")
+            fig_cat = px.pie(df_cat, names="categoria", values="monto", title="Ingresos por categoría")
 
             st.plotly_chart(fig_cat, use_container_width=True)
